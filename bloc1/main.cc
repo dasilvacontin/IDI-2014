@@ -1,4 +1,7 @@
 #if defined(__APPLE__)
+  #include <OpenGL/gl.h>
+  #include <OpenGL/glu.h>
+  #include <GLUT/glut.h>
   #include <OpenGL/OpenGL.h>
   #include <GLUT/GLUT.h>
 #else
