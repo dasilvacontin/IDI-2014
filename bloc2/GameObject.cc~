@@ -1,0 +1,12 @@
+#include "GameObject.h"
+#include <iostream>
+using namespace std;
+
+GameObject::GameObject (GameModel &gm) {
+
+	this->p = {0,0,0};
+	this->r = {0,0,0};
+	this->s = {1,1,1};
+	this->gm = gm;
+
+}

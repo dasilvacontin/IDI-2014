@@ -1,0 +1,18 @@
+#ifndef GAME_OBJECT
+#define GAME_OBJECT
+
+#include "GameModel.h"
+
+class GameObject {
+
+	GameModel gm;
+	float p*;
+	float r*;
+	float s*;
+
+	public:
+		GameObject(GameModel &gm);
+
+};
+
+#endif
