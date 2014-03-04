@@ -13,7 +13,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include "model.h"
+#include "../Model/model.h"
 using namespace std;
 
 int mx = 0, my = 0, edge = 600;
@@ -23,10 +23,15 @@ float scaleX = 1, scaleY = 1;
 float xView = 0, yView = 0;
 
 const char* WINDOW_NAME = "Hello World";
-string MODEL_PATH = "aibsbiaius";
+string HOMER_MODEL_PATH = "../Model/HomerProves.obj";
+string RAYMAN_MODEL_PATH = "../objects/Rayman3/Rayman3.obj";
 int windowIndentifier;
 
-int SPACE_KEY = 32;
+const int SPACE_KEY = 32;
+const int T_KEY = 116;
+const int R_KEY = 114;
+const int S_KEY = 115;
+
 bool rotTransToogle = false;
 
 const int ROT_STATE = 0;
@@ -38,8 +43,7 @@ vector<string> states;
 Model m;
 
 void nextState () {
-	currentState = ++currentState % states.size();
-	cout << states[currentState] << endl << endl;
+    currentState = ++currentState % states.size();
 }
 
 void renderAxis (int size) {
@@ -66,9 +70,34 @@ void renderAxis (int size) {
 
 }
 
+void renderModel (Model &model) {
+
+    vector<Face> faces = model.faces();
+
+    for (int i = 0; i < faces.size(); ++i) {
+
+        const Face &f = faces[i];
+        const Material &mat = Materials[f.mat];
+
+        glBegin(GL_TRIANGLES);
+
+        for (int j = 0; j < f.v.size(); ++j) {
+            const float *d = mat.diffuse;
+            glColor4f(d[0],d[1],d[2],d[3]);
+            glVertex3dv(&model.vertices()[f.v[j]]);
+        }
+
+        glEnd();
+
+
+    }
+
+}
+
 void renderScene (void) {
 
-	glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glLoadIdentity();
 	renderAxis(2);
 	glPushMatrix();
 
@@ -79,23 +108,9 @@ void renderScene (void) {
 	glRotated(rotX/2.0, 0, 1, 0);
 	glRotated(rotY/2.0, 1, 0, 0);
 
-	vector<Face> faces = m.faces();
+    renderAxis(1);
 
-	for (int i = 0; i < faces.size(); ++i) {
-
-		Face f = faces[i];
-		vector<vector<double>> v = f.vertices();
-
-		glBegin(GL_TRIANGLES);
-
-		for (int j = 0; i < vertices.size(); ++i) {
-			glVertex3f(v[j][0],v[j][1],v[j][2]);
-		}
-
-		glEnd();
-
-
-	}
+    renderModel(m);
 
 	glPopMatrix();
 	glutSwapBuffers();
@@ -132,6 +147,7 @@ void mouseMove (int x, int y) {
 			scaleX *= (x-mx)/100.0 + 1;
 			scaleY *= (y-my)/100.0 + 1;
 			break;
+
 	}
 
 	mx = x;
@@ -141,7 +157,25 @@ void mouseMove (int x, int y) {
 
 void keyboardEvent (unsigned char key, int x, int y) {
 
-	if ((int)key == SPACE_KEY) nextState();
+    int oldState = currentState;
+
+    switch((int)key) {
+
+        case SPACE_KEY: nextState();
+            break;
+
+        case T_KEY: currentState = TRANS_STATE;
+            break;
+
+        case R_KEY: currentState = ROT_STATE;
+            break;
+
+        case S_KEY: currentState = SCALE_STATE;
+            break;
+
+    }
+
+   if (oldState != currentState) cout << states[currentState] << endl << endl;
 
 }
 
@@ -154,17 +188,19 @@ int main (int argc, const char * argv []) {
 	states.push_back("Scale!");
 	nextState();
 
-	m.load(MODEL_PATH);
+    m.load(HOMER_MODEL_PATH);
 
 	glutInit(&argc, (char **)argv);
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 	glutInitWindowSize(edge,edge);
 	windowIndentifier = glutCreateWindow(WINDOW_NAME);
+    glEnable(GL_DEPTH_TEST);
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glOrtho(-1,1,-1,1,-1,1);
 	glMatrixMode(GL_MODELVIEW);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	glutReshapeFunc(reshapeWindow);
 	glutDisplayFunc(renderScene);

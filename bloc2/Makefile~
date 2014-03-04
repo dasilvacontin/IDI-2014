@@ -9,7 +9,10 @@ ifeq ($(UNAME),Darwin)
     CCFLAGS += -framework OpenGL -framework GLUT -Wno-deprecated
 endif
 
-all: teacupViewer snowman homerViewer
+all: modelReader
+
+main: main.cc
+	g++ ${CCFLAGS} -o main main.cc
 
 teacupViewer: teacupViewer.cc
 	g++ ${CCFLAGS} -o teacupViewer teacupViewer.cc
@@ -21,4 +24,4 @@ homerViewer: homerViewer.cc
 	g++ ${CCFLAGS} -o homerViewer homerViewer.cc ${MODEL_FLAGS}
 
 clean:
-	rm main teacupViewer snowman homerViewer
+	rm main teacupViewer snowman modelReader
