@@ -13,6 +13,9 @@ class GameObject {
 	public:
 		GameObject(GameModel &gm);
 
+	private:
+		void initializeVectors();
+
 };
 
 #endif

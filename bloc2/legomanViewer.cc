@@ -117,9 +117,9 @@ void renderScene (void) {
 	glRotated(rotX/2.0, 0, 1, 0);
 	glRotated(rotY/2.0, 1, 0, 0);
 
-    renderAxis(1);
+    	renderAxis(1);
 
-    renderModel(m);
+   	renderModel(m);
 
 	glPopMatrix();
 	glutSwapBuffers();
@@ -190,7 +190,7 @@ void keyboardEvent (unsigned char key, int x, int y) {
 
 int main (int argc, const char * argv []) {
 
-	//system("clear");
+	system("clear");
 
 	states.push_back("Rotate!");
 	states.push_back("Translate!");
@@ -198,19 +198,20 @@ int main (int argc, const char * argv []) {
 	nextState();
 
     	GameModel legomanModel (LEGOMAN_MODEL_PATH);
+	cout << legomanModel.p()[0] << " " << legomanModel.p()[1] << " " << legomanModel.p()[2] << endl;
 	GameObject legoman (legomanModel);
 
 	glutInit(&argc, (char **)argv);
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+    	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 	glutInitWindowSize(edge,edge);
 	windowIndentifier = glutCreateWindow(WINDOW_NAME);
-    glEnable(GL_DEPTH_TEST);
+    	glEnable(GL_DEPTH_TEST);
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glOrtho(-1,1,-1,1,-1,1);
 	glMatrixMode(GL_MODELVIEW);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	glutReshapeFunc(reshapeWindow);
 	glutDisplayFunc(renderScene);

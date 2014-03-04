@@ -3,21 +3,24 @@
 
 #include "../Model/model.h"
 #include <string>
-using namespace std;
+#include <vector>
 
 class GameModel {
 
-	Model m;
-	float p[3];
-	float r[3];
-	float s[3];
+	Model _m;
+	std::vector <Vertex> _p;
+	std::vector <Vertex> _r;
+	std::vector <Vertex> _s;
 
 	public:
 		GameModel();
-		GameModel(const string &path_name);
+		GameModel(const std::string &path_name);
+
+		const std::vector<Vertex>& p() const;
 
 	private:
-		void GameModel::initializeVectors();
+		void initializeVectors();
+		void normalizeModel();
 
 };
 
