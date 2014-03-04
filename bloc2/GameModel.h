@@ -1,6 +1,7 @@
 #ifndef GAME_MODEL
 #define GAME_MODEL
 
+#include "GLIncludes.h"
 #include "../Model/model.h"
 #include <string>
 #include <vector>
@@ -15,6 +16,7 @@ class GameModel {
 	public:
 		GameModel();
 		GameModel(const std::string &path_name);
+		void render();
 
 		const std::vector<Vertex>& p() const;
 

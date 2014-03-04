@@ -1,14 +1,4 @@
-#if defined(__APPLE__)
-  #include <OpenGL/gl.h>
-  #include <OpenGL/glu.h>
-  #include <GLUT/glut.h>
-  #include <OpenGL/OpenGL.h>
-  #include <GLUT/GLUT.h>
-#else
-  #include <GL/gl.h>
-  #include <GL/freeglut.h>
-#endif
-
+#include "GLIncludes.h"
 #include <algorithm>
 #include <iostream>
 #include <vector>
@@ -18,10 +8,14 @@
 #include "GameModel.h"
 #include "GameObject.h"
 
+#include <stdio.h>      /* printf, scanf, puts, NULL */
+#include <stdlib.h>     /* srand, rand */
+#include <time.h>       /* time */
+
 using namespace std;
 
 int mx = 0, my = 0, edge = 600;
-int rotX = 0, rotY = 0;
+int rotX = 30, rotY = 30;
 int traX = 0, traY = 0;
 float scaleX = 1, scaleY = 1;
 float xView = 0, yView = 0;
@@ -53,6 +47,7 @@ void nextState () {
     currentState = ++currentState % states.size();
 }
 
+vector<GameModel> gameModels;
 vector<GameObject> gameObjects;
 
 void renderAxis (int size) {
@@ -119,7 +114,16 @@ void renderScene (void) {
 
     	renderAxis(1);
 
-   	renderModel(m);
+   	//renderModel(m);
+	for (int i = 0; i < gameObjects.size(); ++i) gameObjects[i].render();
+		
+	glColor4f((float)0x7C/0xFF, (float)0xD2/0xFF, (float)0x79/0xFF, 1);
+	glBegin(GL_QUADS);
+		glVertex3f(-1.5, -0.4, -1.5);
+		glVertex3f(-1.5, -0.4, 1.5);
+		glVertex3f(1.5, -0.4, 1.5);
+		glVertex3f(1.5, -0.4, -1.5);
+	glEnd();
 
 	glPopMatrix();
 	glutSwapBuffers();
@@ -162,6 +166,8 @@ void mouseMove (int x, int y) {
 	mx = x;
 	my = y;
 	glutPostRedisplay();
+
+	cout << "R:(" << rotX << "," << rotY << "), T:(" << traX << "," << traY << "), S:(" << scaleX << ")" << endl;
 }
 
 void keyboardEvent (unsigned char key, int x, int y) {
@@ -191,15 +197,34 @@ void keyboardEvent (unsigned char key, int x, int y) {
 int main (int argc, const char * argv []) {
 
 	system("clear");
+	srand (time(NULL));
 
 	states.push_back("Rotate!");
 	states.push_back("Translate!");
 	states.push_back("Scale!");
 	nextState();
 
-    	GameModel legomanModel (LEGOMAN_MODEL_PATH);
-	cout << legomanModel.p()[0] << " " << legomanModel.p()[1] << " " << legomanModel.p()[2] << endl;
-	GameObject legoman (legomanModel);
+	vector <string> modelPaths;
+	modelPaths.push_back(HOMER_MODEL_PATH);
+	modelPaths.push_back(LEGOMAN_MODEL_PATH);
+
+	for (int i = 0; i< modelPaths.size(); ++i) gameModels.push_back(GameModel(modelPaths[i]));
+	int gameModelsSize = gameModels.size();
+
+	for (int i = 0; i < 10; ++i) {
+
+		GameObject legoman (gameModels[rand()%gameModelsSize]);
+
+		legoman.p[0] = rand()%200/100.0 - 1;
+		legoman.p[2] = rand()%200/100.0 - 1;
+
+		legoman.s[0] = legoman.s[1] = legoman.s[2] = 0.4;
+
+		legoman.r[1] = rand()%360;
+
+		gameObjects.push_back(legoman);
+
+	}
 
 	glutInit(&argc, (char **)argv);
     	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
@@ -212,6 +237,7 @@ int main (int argc, const char * argv []) {
 	glOrtho(-1,1,-1,1,-1,1);
 	glMatrixMode(GL_MODELVIEW);
     	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glClearColor(255, 255, 255, 1);
 
 	glutReshapeFunc(reshapeWindow);
 	glutDisplayFunc(renderScene);

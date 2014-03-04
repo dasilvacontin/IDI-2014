@@ -1,5 +1,8 @@
 #include "GameModel.h"
+#include <iostream>
 
+#pragma mark Public Methods
+ 
 GameModel::GameModel () {
 
 	initializeVectors();
@@ -14,9 +17,47 @@ GameModel::GameModel (const std::string &model_path) {
 
 }
 
+void GameModel::render () {
+
+	glPushMatrix();
+
+	glScaled(_s[0], _s[1], _s[2]);
+	glTranslated(_p[0], _p[1], _p[2]);
+	//std::cout << "Model scale: " << _s[0] << ", " << _s[1] << ", " << _s[2] << std::endl;
+	
+
+	std::vector<Face> faces = _m.faces();
+
+	for (int i = 0; i < faces.size(); ++i) {
+
+		const Face &f = faces[i];
+		const Material &mat = Materials[f.mat];
+
+		glBegin(GL_TRIANGLES);
+
+		for (int j = 0; j < f.v.size(); ++j) {
+
+			const float *d = mat.diffuse;
+			glColor4f(d[0],d[1],d[2],d[3]);
+			glVertex3dv(&_m.vertices()[f.v[j]]);
+
+		}
+
+		glEnd();
+
+	}
+
+	glPopMatrix();
+
+}
+
+#pragma mark Getters
+
 const std::vector<Vertex>& GameModel::p() const {
 	return _p;
 }
+
+#pragma mark Private Methods
 
 void GameModel::initializeVectors () {
 
@@ -50,5 +91,20 @@ void GameModel::normalizeModel () {
 	for (int i = 0; i < 3; ++i) {
 		_p[i] = -(max[i]+min[i])/2.0;
 	}
+
+	
+	//Fix scale
+	Vertex maxEdge = max[0] - min[0];
+	for (int i = 1; i < 3; ++i) {
+		double edge = max[i] - min[i];
+		if (edge > maxEdge) maxEdge = edge;
+	}
+
+	double scale = 2.0 / maxEdge;
+	for (int i = 0; i < 3; ++i) {
+		_s[i] = scale;
+	}
+	
+	std::cout << "Model Max Edge: " << maxEdge << ", Model scale: " << _s[0] << ", " << _s[1] << ", " << _s[2] << std::endl;
 
 }
