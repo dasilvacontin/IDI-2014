@@ -80,11 +80,6 @@ void renderSnowman (void) {
 
 	glTranslated(0,-0.4,0);
 
-	glScaled(scaleX, scaleX, 1);
-
-	glRotated(rotX/2.0, 0, 1, 0);
-	glRotated(rotY/2.0, 1, 0, 0);
-
 	glutWireSphere(0.4, 10, 10);
 
 	glTranslated(0, 0.6, 0);
