@@ -27,4 +27,4 @@ entrega2: entrega2.cc
 	g++ ${CCFLAGS} -o entrega2 entrega2.cc ${MODEL_FLAGS}
 
 clean:
-	rm -rf *.dSYM *~ entrega2
+	rm -rf *.dSYM *~ homerViewer legomanViewer entrega2

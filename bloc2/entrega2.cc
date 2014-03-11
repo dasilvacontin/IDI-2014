@@ -271,7 +271,7 @@ int main (int argc, const char * argv []) {
 	glOrtho(-size,size,-size,size,-size,size);
 	glMatrixMode(GL_MODELVIEW);
     	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glClearColor(255, 255, 255, 1);
+	glClearColor((float)0xDA/0xFF, (float)0xC2/0xFF, (float)0xEB/0xFF, 1);
 
 	glutReshapeFunc(reshapeWindow);
 	glutDisplayFunc(renderScene);
