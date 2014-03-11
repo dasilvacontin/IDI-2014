@@ -11,12 +11,13 @@
 #include <stdio.h>      /* printf, scanf, puts, NULL */
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>       /* time */
+#include <math.h>
 
 using namespace std;
 
 int mx = 0, my = 0, edge = 600;
-int rotX = 30, rotY = 30;
-int traX = 0, traY = 0;
+float rotX = 30, rotY = 30;
+float traX = 0, traY = 0;
 float scaleX = 1, scaleY = 1;
 float xView = 0, yView = 0;
 
@@ -194,6 +195,18 @@ void keyboardEvent (unsigned char key, int x, int y) {
 
 }
 
+const int FRAMES_PER_SECOND = 60;
+const int SKIP_TICKS = 1000 / FRAMES_PER_SECOND;
+
+int frames = 0;
+
+void mainLoop () {
+	++frames;
+	rotX += 5;
+	scaleX = scaleY = 1 - (float)sin(frames/5.0)/10.0;
+	glutPostRedisplay();
+}
+
 int main (int argc, const char * argv []) {
 
 	system("clear");
@@ -234,7 +247,8 @@ int main (int argc, const char * argv []) {
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(-1,1,-1,1,-1,1);
+	int size = 3;
+	glOrtho(-size, size, -size, size, -size, size);
 	glMatrixMode(GL_MODELVIEW);
     	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glClearColor((float)0xDA/0xFF, (float)0xC2/0xFF, (float)0xEB/0xFF, 1);
@@ -244,7 +258,9 @@ int main (int argc, const char * argv []) {
 	glutMouseFunc(mouseEvent);
 	glutMotionFunc(mouseMove);
 	glutKeyboardFunc(keyboardEvent);
+	glutIdleFunc(mainLoop);
 	glutMainLoop();
+	cout << "hi" << endl;
 
   return 0;
 }
