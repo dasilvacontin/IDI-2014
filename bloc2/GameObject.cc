@@ -2,6 +2,10 @@
 #include <iostream>
 using namespace std;
 
+GameObject::GameObject () {
+	initializeVectors();
+}
+
 GameObject::GameObject (GameModel &gm) {
 
 	initializeVectors();
@@ -10,6 +14,8 @@ GameObject::GameObject (GameModel &gm) {
 }
 
 void GameObject::render () {
+
+	std::vector <Vertex> box = _gm.box();
 	
 	glPushMatrix();
 
@@ -21,8 +27,11 @@ void GameObject::render () {
 
 	glScaled(s[0], s[1], s[2]);
 
+	glTranslated(-(regPoint[0]*box[0]/2.0), -(regPoint[1]*box[1]/2.0), -(regPoint[2]*box[2]/2.0));
+
 	renderAxis(2);
 	_gm.render();
+	_gm.renderBox();
 
 	glPopMatrix();
 
@@ -33,6 +42,7 @@ void GameObject::initializeVectors () {
 	p = std::vector<Vertex> (3, 0);
 	r = std::vector<Vertex> (3, 0);
 	s = std::vector<Vertex> (3, 1);
+	regPoint = std::vector<Vertex> (3, 0);
 
 }
 

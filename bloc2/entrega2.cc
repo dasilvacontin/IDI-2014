@@ -75,6 +75,29 @@ void renderAxis (int size) {
 
 }
 
+void renderSnowman (void) {
+	glPushMatrix();
+
+	glTranslated(0,-0.4,0);
+
+	glScaled(scaleX, scaleX, 1);
+
+	glRotated(rotX/2.0, 0, 1, 0);
+	glRotated(rotY/2.0, 1, 0, 0);
+
+	glutWireSphere(0.4, 10, 10);
+
+	glTranslated(0, 0.6, 0);
+	glutWireSphere(0.2, 10, 10);
+
+	glRotated(90, 0, 1, 0);
+	glTranslated(0, 0, 0.15);
+
+	glutWireCone(0.1, 0.2, 10, 10);
+
+	glPopMatrix();
+}
+
 void renderScene (void) {
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -101,6 +124,15 @@ void renderScene (void) {
 		glVertex3f(1.5, -0.4, 1.5);
 		glVertex3f(1.5, -0.4, -1.5);
 	glEnd();
+
+	glBegin(GL_LINES);
+		//Visual guide for -0.75,x,-0.75
+		glColor4f(0,1,0,1);
+		glVertex3f(0.75,-0.4,0.75);
+		glVertex3f(0.75,0.4,0.75);
+	glEnd();
+
+	renderSnowman();
 
 	glPopMatrix();
 	glutSwapBuffers();
@@ -220,7 +252,17 @@ int main (int argc, const char * argv []) {
 
 	legoman.p[1] = -0.4 + 0.5/2; //Feet position + half height
 
+	legoman.p[0] = 0.75;
+	legoman.p[1] = -0.4;
+	legoman.p[2] = 0.75;
+
 	legoman.s[0] = legoman.s[1] = legoman.s[2] = 0.5*0.5;
+
+	legoman.regPoint[0] = 1;
+	legoman.regPoint[1] = -1;
+	legoman.regPoint[2] = 1;
+
+	//legoman.
 
 	glutInit(&argc, (char **)argv);
     	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
@@ -230,7 +272,8 @@ int main (int argc, const char * argv []) {
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(-1,1,-1,1,-1,1);
+	int size = 1;
+	glOrtho(-size,size,-size,size,-size,size);
 	glMatrixMode(GL_MODELVIEW);
     	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glClearColor(255, 255, 255, 1);

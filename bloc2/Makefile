@@ -1,5 +1,5 @@
 CCFLAGS = -g
-MODEL_FLAGS = ../Model/model.o GameObject.cc GameModel.cc
+MODEL_FLAGS = ../Model/model.cpp GameObject.cc GameModel.cc
 UNAME = $(shell uname -s)
 
 ifeq ($(UNAME),Linux)
@@ -9,7 +9,7 @@ ifeq ($(UNAME),Darwin)
     CCFLAGS += -framework OpenGL -framework GLUT -Wno-deprecated
 endif
 
-all: teacupViewer snowman homerViewer legomanViewer
+all: teacupViewer snowman homerViewer legomanViewer entrega2
 
 teacupViewer: teacupViewer.cc
 	g++ ${CCFLAGS} -o teacupViewer teacupViewer.cc
@@ -23,5 +23,8 @@ homerViewer: homerViewer.cc
 legomanViewer: legomanViewer.cc
 	g++ ${CCFLAGS} -o legomanViewer legomanViewer.cc ${MODEL_FLAGS}
 
+entrega2: entrega2.cc
+	g++ ${CCFLAGS} -o entrega2 entrega2.cc ${MODEL_FLAGS}
+
 clean:
-	rm main teacupViewer snowman homerViewer legomanViewer
+	rm entrega2
