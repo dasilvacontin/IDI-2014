@@ -200,11 +200,12 @@ const int SKIP_TICKS = 1000 / FRAMES_PER_SECOND;
 
 int frames = 0;
 
-void mainLoop () {
+void mainLoop (int v) {
 	++frames;
 	rotX += 5;
 	scaleX = scaleY = 1 - (float)sin(frames/5.0)/10.0;
 	glutPostRedisplay();
+	glutTimerFunc(1000/60, mainLoop, 0);
 }
 
 int main (int argc, const char * argv []) {
@@ -258,7 +259,7 @@ int main (int argc, const char * argv []) {
 	glutMouseFunc(mouseEvent);
 	glutMotionFunc(mouseMove);
 	glutKeyboardFunc(keyboardEvent);
-	glutIdleFunc(mainLoop);
+	glutTimerFunc(1000/60, mainLoop, 0);
 	glutMainLoop();
 	cout << "hi" << endl;
 
