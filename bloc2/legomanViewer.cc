@@ -221,6 +221,7 @@ int main (int argc, const char * argv []) {
 	vector <string> modelPaths;
 	modelPaths.push_back(HOMER_MODEL_PATH);
 	modelPaths.push_back(LEGOMAN_MODEL_PATH);
+	modelPaths.push_back(RAYMAN_MODEL_PATH);
 
 	for (int i = 0; i< modelPaths.size(); ++i) gameModels.push_back(GameModel(modelPaths[i]));
 	int gameModelsSize = gameModels.size();
