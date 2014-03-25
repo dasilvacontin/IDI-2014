@@ -350,12 +350,15 @@ void setCamera () {
 	glLoadIdentity();
 
 	
-	if (ORTHO_CAMERA || true) glOrtho(-WME*vw*zoom, WME*vw*zoom, -WME*quo*zoom, WME*quo*zoom, -WME*quo+dist, WME*quo+dist);
+	if (ORTHO_CAMERA) glOrtho(-WME*vw*zoom, WME*vw*zoom, -WME*quo*zoom, WME*quo*zoom, -WME*quo+dist, WME*quo+dist);
 	else {
-
+	/*
 		float fovy = 2*atan(WME*quo/(dist-WME*quo))*(180/M_PI)*zoom;
 		if (fovy > 180) fovy = 180;
 		gluPerspective(fovy, viewportRatio, dist-WME*quo, dist+WME*quo);
+*/
+		gluPerspective(60, viewportRatio, 0.1, 1000);
+
 
 	}
 
@@ -375,8 +378,7 @@ void setCamera () {
 
 		++t;
 		GameObject patrick = gameobjects[0];
-		gluLookAt(patrick.p[0]+5*cos(t/100.0), (patrick.p[1]+0.5)+1, patrick.p[2]+5*sin(t/100.0), patrick.p[0], patrick.p[1]+0.5, patrick.p[2], 0, 1, 0);
-
+		gluLookAt(patrick.p[0], patrick.p[1]+1, patrick.p[2], patrick.p[0]+5*sin(t/100.0) , patrick.p[1], patrick.p[2]+5*cos(t/100.0), 0, 1, 0);
 	}
 
 	renderUI();
@@ -613,7 +615,7 @@ int main (int argc, const char * argv []) {
 
 	renderUI();
 
-	//glutFullScreen();
+	glutFullScreen();
 
 	glutMainLoop();
 
