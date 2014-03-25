@@ -17,12 +17,15 @@
 
 using namespace std;
 
+int d = 0;
 int mx = 0, my = 0, edge = 600;
 int rotX = 0, rotY = 0;
 int traX = 0, traY = 0;
 float zoom = 1;
 float xView = 0, yView = 0;
 float dist = 10;
+float speed = 1;
+float angle = -speed*2*M_PI*rotX/360;
 
 const char* WINDOW_NAME = "Hello World";
 
@@ -38,7 +41,6 @@ const int SPACE_KEY = 32;
 const int T_KEY = 116;
 const int R_KEY = 114;
 const int S_KEY = 115;
-const int H_KEY = 104;
 const int W_KEY = 119;
 const int ESC_KEY = 27;
 const int A_KEY = 97;
@@ -46,10 +48,18 @@ const int B_KEY = 98;
 const int C_KEY = 99;
 const int D_KEY = 100;
 const int E_KEY = 101;
+const int F_KEY = 102;
+const int G_KEY = 103;
+const int H_KEY = 104;
+const int I_KEY = 105;
+const int O_KEY = 111;
+const int P_KEY = 112;
 const int Q_KEY = 113;
 const int V_KEY = 118;
 
-const int ROT_STATE = 0;
+const int INSPECT_STATE = 0;
+const int OPTIONS_STATE = 1;
+const int FIRST_PERSON_STATE = 2;
 int currentState = 0;
 vector<string> states;
 
@@ -58,7 +68,12 @@ bool SPHERE_VISIBLE = true;
 bool AXIS_VISIBLE = true;
 bool WALLS_VISIBLE = true;
 bool BOX_VISIBLE = false;
+
 bool ORTHO_CAMERA = true;
+bool THIRD_CAMERA = false;
+
+//FIRST_PERSON
+vector <int> DOWN (256, 0);
 
 float distPtoP (float p1x, float p1y, float p1z, float p2x, float p2y, float p2z) {
 	return sqrt(pow(p2x-p1x,2)+pow(p2y-p1y,2)+pow(p2z-p1z,2));
@@ -67,6 +82,7 @@ float distPtoP (float p1x, float p1y, float p1z, float p2x, float p2y, float p2z
 vector<vector<Vertex> > floorVertex;
 vector<vector<Vertex> > wallVertex;
 vector<Vertex> VRP (3, 0);
+vector<Vertex> EYE (3, 0);
 
 //Mouse
 vector<int> MB_STATE (5,1);
@@ -97,20 +113,6 @@ void randomVRP () {
 }
 
 void calculateSceneProperties () {
-
-	/*
-	GameObject legoman = GameObjects[0];
-
-	VRP[0] = legoman.p[0];
-	VRP[1] = legoman.p[1];
-	VRP[2] = legoman.p[2];
-
-	std::vector <Vertex> box = legoman._gm.box();
-
-	VRP[0] -= legoman.regPoint[0]*box[0]*legoman.s[0]/2.0;
-	VRP[1] -= legoman.regPoint[1]*box[1]*legoman.s[1]/2.0;
-	VRP[2] -= legoman.regPoint[2]*box[2]*legoman.s[2]/2.0;
-	*/
 
 	SCENE_RADIUS = 0;
 
@@ -246,16 +248,37 @@ void renderUI () {
    	cout << endl << "R:(" << rotX << "," << rotY << ")" << endl;
    	cout << "VRP (" << VRP[0] << ", " << VRP[1] << ", " << VRP[2] << ")" << endl;
    	cout << "Zoom: " << zoom << endl;
-   	cout << "Ortho: " << ORTHO_CAMERA << endl << endl;
-  
-   	cout << "(A) to toggle axis." << endl;
-   	cout << "(B) to toggle boxes." << endl;
-   	cout << "(C) to toggle camera." << endl;
-	cout << "(D) to enable key debug." << endl;
-	cout << "(E) to reset camera properties." << endl;
-	cout << "(V) to toggle walls." << endl;
-   	cout << "(W) to toggle sphere container." << endl << endl;
+   	cout << endl;
 
+   	switch (currentState) {
+
+   		case INSPECT_STATE:
+   			cout << "Drag to rotate camera." << endl;
+   			cout << "RightClick + Drag to zoom." << endl;
+   			cout << endl;
+   			cout << "(C) to toggle camera." << endl;
+   			cout << "(R) to reset camera properties." << endl;
+   			cout << "(SPACE) to randomize VRP." << endl;
+   			cout << endl;
+   			break;
+
+   		case OPTIONS_STATE:
+   			cout << "(A) to toggle Axis." << endl;
+   			cout << "(B) to toggle Boxes." << endl;
+   			cout << "(D) to enable key Debug." << endl;
+   			cout << "(F) to toggle Fullscreen mode." << endl;
+   			cout << "(V) to toggle walls." << endl;
+   			cout << "(W) to toggle sphere Wireframe." << endl << endl;
+   			break;
+
+   		case FIRST_PERSON_STATE:
+   			cout << "Drag to rotate." << endl;
+   			cout << "[W] to move forward." << endl;
+   			cout << endl;
+   			break;
+
+   	}
+  
    	cout << "(ESC) to exit." << endl << endl;
 
 }
@@ -271,7 +294,7 @@ void renderScene (void) {
 	//glRotated(-rotY/2.0, 1, 0, 0);
 	setColor(0xaa, 0xaa, 0xaa, 1);
 	if (SPHERE_VISIBLE) glutWireSphere(SCENE_RADIUS, 50, 50);
-	renderAxis(10);
+	renderAxis(SCENE_RADIUS);
 
 	_box[0] = WME*vw*2;
 	_box[1] = _box[2] = WME*quo*2;
@@ -292,6 +315,9 @@ void renderScene (void) {
 	glEnd();
 
 	glPushMatrix();
+	glTranslated(0, -0.2 + 0.2*sin(d/10.0),0);
+
+	glPushMatrix();
 	glTranslated(2.5, 0, 2.5);
 	renderSnowman();
 	glPopMatrix();
@@ -304,6 +330,8 @@ void renderScene (void) {
 	glPushMatrix();
 	glTranslated(-2.5, 0, -2.5);
 	renderSnowman();
+	glPopMatrix();
+
 	glPopMatrix();
 
 
@@ -337,36 +365,43 @@ int t = 0;
 
 void setCamera () {
 
-	quo = 1.0;
-	vw = viewportRatio;
-	if (viewportRatio < 1) {
-		quo /= viewportRatio;
-		vw = 1.0;
-	}
+	renderUI();
 
 	calculateSceneProperties();
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 
-	
-	if (ORTHO_CAMERA) glOrtho(-WME*vw*zoom, WME*vw*zoom, -WME*quo*zoom, WME*quo*zoom, -WME*quo+dist, WME*quo+dist);
-	else {
-	/*
-		float fovy = 2*atan(WME*quo/(dist-WME*quo))*(180/M_PI)*zoom;
-		if (fovy > 180) fovy = 180;
-		gluPerspective(fovy, viewportRatio, dist-WME*quo, dist+WME*quo);
-*/
+	if (currentState == FIRST_PERSON_STATE) {
+
 		gluPerspective(60, viewportRatio, 0.1, 1000);
 
+	} else {
+
+		quo = 1.0;
+		vw = viewportRatio;
+		if (viewportRatio < 1) {
+			quo /= viewportRatio;
+			vw = 1.0;
+		}
+
+		if (ORTHO_CAMERA) glOrtho(-WME*vw*zoom, WME*vw*zoom, -WME*quo*zoom, WME*quo*zoom, -WME*quo+dist, WME*quo+dist);
+		else {
+
+			float fovy = 2*atan(WME*quo/(dist-WME*quo))*(180/M_PI)*zoom;
+			if (fovy > 180) fovy = 180;
+			gluPerspective(fovy, viewportRatio, dist-WME*quo, dist+WME*quo);
+
+		}
 
 	}
+	
 
 	glMatrixMode(GL_MODELVIEW);
 
 	glLoadIdentity();
 
-	if (ORTHO_CAMERA) {
+	if (currentState != FIRST_PERSON_STATE) {
 	
 		glTranslated(0,0,-dist);
 		glRotated(0, 0, 0, 1);
@@ -376,12 +411,41 @@ void setCamera () {
 
 	} else {
 
-		++t;
-		GameObject patrick = gameobjects[0];
-		gluLookAt(patrick.p[0], patrick.p[1]+1, patrick.p[2], patrick.p[0]+5*sin(t/100.0) , patrick.p[1], patrick.p[2]+5*cos(t/100.0), 0, 1, 0);
-	}
+		angle = -speed*2*M_PI*rotX/360;
+		GameObject &patrick = gameobjects[0];
+		patrick.r[1] = angle*(360/(2*M_PI));
+		cout << patrick.r[1] << endl;
 
-	renderUI();
+		vector<Vertex> old_VRP (VRP);
+		vector<Vertex> old_EYE (EYE);
+
+		VRP[0] = patrick.p[0]+5*sin(angle);
+		VRP[1] = patrick.p[1];
+		VRP[2] = patrick.p[2]+5*cos(angle);
+
+
+
+		if (THIRD_CAMERA) {
+			EYE[0] = patrick.p[0]-5*sin(angle);
+			EYE[1] = patrick.p[1]+2;
+			EYE[2] = patrick.p[2]-5*cos(angle);
+		} else {
+			EYE[0] = patrick.p[0];
+			EYE[1] = patrick.p[1]+1;
+			EYE[2] = patrick.p[2];
+		}
+
+		
+		EYE[0] = old_EYE[0] + (EYE[0]-old_EYE[0])/5.;
+		EYE[1] = old_EYE[1] + (EYE[1]-old_EYE[1])/5.;
+		EYE[2] = old_EYE[2] + (EYE[2]-old_EYE[2])/5.;
+
+
+		gluLookAt(	EYE[0], EYE[1], EYE[2],
+					VRP[0],	VRP[1],	VRP[2],
+					0,		1,		0);
+
+	}
 
 }
 
@@ -422,16 +486,23 @@ void mouseMove (int x, int y) {
 
 }
 
+void mouseMovePassive (int x, int y) {
+	if (currentState == FIRST_PERSON_STATE) mouseMove(x,y);
+}
+
+void keyboardUp (unsigned char key, int x, int y) {
+	DOWN[key] = false;
+}
+
 void keyboardEvent (unsigned char key, int x, int y) {
 
     int oldState = currentState;
 
     if (DEBUG_MODE) cout << (int)key << endl;
 
-    switch((int)key) {
+    DOWN[key] = true;
 
-        case R_KEY: currentState = ROT_STATE;
-            break;
+    switch((int)key) {
 
         case ESC_KEY: system("clear");
         	cout << "KTHXBYE" << endl << endl;
@@ -439,48 +510,89 @@ void keyboardEvent (unsigned char key, int x, int y) {
         	break;
 
         case D_KEY:
-			DEBUG_MODE = !DEBUG_MODE;
+			if (currentState == OPTIONS_STATE) DEBUG_MODE = !DEBUG_MODE;
 			break;
 
 		case W_KEY:
-			SPHERE_VISIBLE = !SPHERE_VISIBLE;
-			glutPostRedisplay();
+			if (currentState == OPTIONS_STATE) {
+				SPHERE_VISIBLE = !SPHERE_VISIBLE;
+				glutPostRedisplay();
+			}
 			break;
 
 		case A_KEY:
-			AXIS_VISIBLE = !AXIS_VISIBLE;
-			glutPostRedisplay();
+			if (currentState == OPTIONS_STATE) {
+				AXIS_VISIBLE = !AXIS_VISIBLE;
+				glutPostRedisplay();
+			}
 			break;
 
 		case B_KEY:
-			BOX_VISIBLE = !BOX_VISIBLE;
-			glutPostRedisplay();
+			if (currentState == OPTIONS_STATE) {
+				BOX_VISIBLE = !BOX_VISIBLE;
+				glutPostRedisplay();
+			}
 			break;
 
 		case C_KEY:
-			ORTHO_CAMERA = !ORTHO_CAMERA;
+			if (currentState == INSPECT_STATE) {
+				ORTHO_CAMERA = !ORTHO_CAMERA;
+				setCamera();
+				glutPostRedisplay();
+			} else if (currentState == FIRST_PERSON_STATE) {
+				THIRD_CAMERA = !THIRD_CAMERA;
+				setCamera();
+				glutPostRedisplay();
+			}
+			break;
+
+		case R_KEY:
+			if (currentState == INSPECT_STATE) {
+				rotX = 0;
+				rotY = 0;
+				zoom = 1;
+				ORTHO_CAMERA = true;
+				setCamera();
+				glutPostRedisplay();
+			}
+			break;
+
+		case F_KEY:
+			if (currentState == OPTIONS_STATE) {
+				glutFullScreen();
+			}
+			break;
+
+		case I_KEY:
+			currentState = INSPECT_STATE;
 			setCamera();
 			glutPostRedisplay();
 			break;
 
-		case E_KEY:
-			rotX = 0;
-			rotY = 0;
-			zoom = 1;
-			ORTHO_CAMERA = true;
+		case O_KEY:
+			currentState = OPTIONS_STATE;
+			break;
+
+		case P_KEY:
+			currentState = FIRST_PERSON_STATE;
 			setCamera();
 			glutPostRedisplay();
 			break;
 
 		case V_KEY:
-			WALLS_VISIBLE = !WALLS_VISIBLE;
-			glutPostRedisplay();
+			if (currentState == OPTIONS_STATE) {
+				WALLS_VISIBLE = !WALLS_VISIBLE;
+				glutPostRedisplay();
+			}
 			break;
 
 		case SPACE_KEY:
-			randomVRP();
-			setCamera();
-			glutPostRedisplay();
+			if (currentState == INSPECT_STATE) {
+				randomVRP();
+				setCamera();
+				glutPostRedisplay();
+			}
+			break;
 
     }
 
@@ -490,13 +602,38 @@ void keyboardEvent (unsigned char key, int x, int y) {
 
 }
 
+void mainLoop (int v) {
+	++d;
+	if (currentState == FIRST_PERSON_STATE) {
+		if (DOWN[W_KEY]) {
+			gameobjects[0].p[0] += 0.1*sin(angle);
+			gameobjects[0].p[2] += 0.1*cos(angle);
+		}
+		if (DOWN[A_KEY]) {
+			gameobjects[0].p[0] += 0.1*sin(angle+M_PI/2.0);
+			gameobjects[0].p[2] += 0.1*cos(angle+M_PI/2.0);
+		}
+		if (DOWN[D_KEY]) {
+			gameobjects[0].p[0] += 0.1*sin(angle-M_PI/2.0);
+			gameobjects[0].p[2] += 0.1*cos(angle-M_PI/2.0);
+		}
+		if (DOWN[S_KEY]) {
+			gameobjects[0].p[0] += 0.1*sin(angle+M_PI);
+			gameobjects[0].p[2] += 0.1*cos(angle+M_PI);
+		}
+		setCamera();
+	}
+	glutPostRedisplay();
+	glutTimerFunc(1000/60, mainLoop, 0);
+}
+
 int main (int argc, const char * argv []) {
 
 	srand (time(NULL));
 
-	states.push_back("Rotate! (R)");
-	nextState();
-
+	states.push_back("Inspect! (I)");
+	states.push_back("Options! (O)");
+	states.push_back("First Person! (P)");
 
 	//PATRICKS
 	GameModel patrickModel (PATRICK_MODEL_PATH);
@@ -611,12 +748,13 @@ int main (int argc, const char * argv []) {
 	glutDisplayFunc(renderScene);
 	glutMouseFunc(mouseEvent);
 	glutMotionFunc(mouseMove);
+	glutPassiveMotionFunc(mouseMovePassive);
 	glutKeyboardFunc(keyboardEvent);
+	glutKeyboardUpFunc(keyboardUp);
 
 	renderUI();
 
-	glutFullScreen();
-
+	glutTimerFunc(1000/60, mainLoop, 0);
 	glutMainLoop();
 
   return 0;
