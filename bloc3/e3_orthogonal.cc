@@ -37,7 +37,11 @@ const int R_KEY = 114;
 const int S_KEY = 115;
 const int C_KEY = 99;
 const int H_KEY = 104;
+const int D_KEY = 100;
+const int W_KEY = 119;
 const int ESC_KEY = 27;
+const int A_KEY = 97;
+const int B_KEY = 98;
 
 const int ROT_STATE = 0;
 const int TRANS_STATE = 1;
@@ -45,6 +49,11 @@ const int SCALE_STATE = 2;
 const int HERO_STATE = 3;
 int currentState = 0;
 vector<string> states;
+
+bool DEBUG_MODE = false;
+bool SPHERE_VISIBLE = true;
+bool AXIS_VISIBLE = true;
+bool BOX_VISIBLE = true;
 
 float distPtoP (float p1x, float p1y, float p1z, float p2x, float p2y, float p2z) {
 	return sqrt(pow(p2x-p1x,2)+pow(p2y-p1y,2)+pow(p2z-p1z,2));
@@ -69,6 +78,8 @@ void setColor (float r, float g, float b, float a) {
 }
 
 void renderAxis (int size) {
+
+	if (!AXIS_VISIBLE) return;
 
 	glPushMatrix();
 
@@ -130,10 +141,14 @@ void renderScene (void) {
 
 	//Stage axis render
 	renderAxis(10);
+
+	glTranslated(0,0,-0.5);
+	glutWireSphere(0.25, 10, 10);
+	/*
 	glTranslated(0,-SCENE_CENTER_Y,0);
 
     //Hero render
-   	legoman.render();
+   	legoman.render(AXIS_VISIBLE, BOX_VISIBLE);
 	
 	//Floor render
 	setColor(0x37,0xA4,0x3E, 1);
@@ -144,23 +159,23 @@ void renderScene (void) {
 		glVertex3f(1.5, -0.4, 1.5);
 		glVertex3f(1.5, -0.4, -1.5);
 	glEnd();
-	
-	glBegin(GL_LINES);
-		//Visual guide for -0.75,x,-0.75
-		glColor4f(0,1,0,1);
-		glVertex3f(0.75,-0.4,0.75);
-		glVertex3f(0.75,0.4,0.75);
-	glEnd();
+
+	//Visual guide for -0.75,x,-0.75
+	glTranslated(0.75,-0.4,0.75);
+	renderAxis(1);
+	glTranslated(-0.75,0.4,-0.75);
 
 	renderSnowman();
 
 	glTranslated(0, SCENE_CENTER_Y, 0);
-	glutWireSphere(SCENE_RADIUS, 50, 50);
+	if (SPHERE_VISIBLE) glutWireSphere(SCENE_RADIUS, 50, 50);
 	glTranslated(0, SCENE_HEIGHT/2.0, 0);
 	renderAxis(1);
+	*/
 
 	glPopMatrix();
 	glutSwapBuffers();
+	
 
 }
 
@@ -204,6 +219,10 @@ void renderUI () {
 
    	cout << endl << "R:(" << rotX << "," << rotY << "), T:(" << traX << "," << traY << "), S:(" << scaleX << ")" << endl << endl;
 
+   	cout << "(D) to enable key debug." << endl;
+   	cout << "(A) to toggle axis." << endl;
+   	cout << "(B) to toggle boxes." << endl;
+   	cout << "(W) to toggle sphere container." << endl;
    	cout << "ESC to exit." << endl << endl;
 
 }
@@ -245,7 +264,7 @@ void keyboardEvent (unsigned char key, int x, int y) {
 
     int oldState = currentState;
 
-    //cout << (int)key << endl;
+    if (DEBUG_MODE) cout << (int)key << endl;
 
     switch((int)key) {
 
@@ -267,6 +286,25 @@ void keyboardEvent (unsigned char key, int x, int y) {
         case ESC_KEY: cout << "KTHXBYE" << endl << endl;
         	exit(0);
         	break;
+
+        case D_KEY:
+			DEBUG_MODE = !DEBUG_MODE;
+			break;
+
+		case W_KEY:
+			SPHERE_VISIBLE = !SPHERE_VISIBLE;
+			glutPostRedisplay();
+			break;
+
+		case A_KEY:
+			AXIS_VISIBLE = !AXIS_VISIBLE;
+			glutPostRedisplay();
+			break;
+
+		case B_KEY:
+			BOX_VISIBLE = !BOX_VISIBLE;
+			glutPostRedisplay();
+			break;
 
     }
 
@@ -304,17 +342,17 @@ int main (int argc, const char * argv []) {
 	//legoman.
 
 	glutInit(&argc, (char **)argv);
-    	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 	glutInitWindowSize(edge,edge);
 	windowIndentifier = glutCreateWindow(WINDOW_NAME);
-    	glEnable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	int size = 1;
 	glOrtho(-size,size,-size,size,-size,size);
 	glMatrixMode(GL_MODELVIEW);
-    	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glClearColor((float)0xDA/0xFF, (float)0xC2/0xFF, (float)0xEB/0xFF, 1);
 
 	glutReshapeFunc(reshapeWindow);

@@ -10,6 +10,7 @@
 #else
   #include <GL/gl.h>
   #include <GL/freeglut.h>
+  #include <GL/glu.h>
 #endif
 
 #endif

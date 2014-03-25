@@ -6,17 +6,16 @@
 
 class GameObject {
 
-	GameModel _gm;
-
 	public:
 		GameObject();
 		GameObject(GameModel &gm);
-		void render();
+		void render (bool shouldRenderAxis = false, bool shouldRenderBox = false);
 
 		std::vector <Vertex> p;
 		std::vector <Vertex> r;
 		std::vector <Vertex> s;
 		std::vector <Vertex> regPoint;
+		GameModel _gm;
 
 	private:
 		void initializeVectors();

@@ -147,7 +147,7 @@ void GameModel::normalizeModel () {
 		if (edge > maxEdge) maxEdge = edge;
 	}
 
-	double scale = 2.0 / maxEdge;
+	double scale = 1.0 / maxEdge;
 	for (int i = 0; i < 3; ++i) {
 		_s[i] = scale;
 		_box[i] *= scale;

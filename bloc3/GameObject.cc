@@ -13,7 +13,7 @@ GameObject::GameObject (GameModel &gm) {
 
 }
 
-void GameObject::render () {
+void GameObject::render (bool shouldRenderAxis, bool shouldRenderBox) {
 
 	std::vector <Vertex> box = _gm.box();
 	
@@ -29,9 +29,10 @@ void GameObject::render () {
 
 	glTranslated(-(regPoint[0]*box[0]/2.0), -(regPoint[1]*box[1]/2.0), -(regPoint[2]*box[2]/2.0));
 
-	renderAxis(2);
 	_gm.render();
-	_gm.renderBox();
+
+	if (shouldRenderAxis) renderAxis(2);
+	if (shouldRenderBox) _gm.renderBox();
 
 	glPopMatrix();
 
