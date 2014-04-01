@@ -68,6 +68,7 @@ bool SPHERE_VISIBLE = true;
 bool AXIS_VISIBLE = true;
 bool WALLS_VISIBLE = true;
 bool BOX_VISIBLE = false;
+bool ANIMATE = false;
 
 bool ORTHO_CAMERA = true;
 bool THIRD_CAMERA = false;
@@ -315,7 +316,7 @@ void renderScene (void) {
 	glEnd();
 
 	glPushMatrix();
-	glTranslated(0, -0.2 + 0.2*sin(d/10.0),0);
+	if (ANIMATE) glTranslated(0, -0.2 + 0.2*sin(d/10.0),0);
 
 	glPushMatrix();
 	glTranslated(2.5, 0, 2.5);
@@ -435,10 +436,13 @@ void setCamera () {
 			EYE[2] = patrick.p[2];
 		}
 
-		
-		EYE[0] = old_EYE[0] + (EYE[0]-old_EYE[0])/5.;
-		EYE[1] = old_EYE[1] + (EYE[1]-old_EYE[1])/5.;
-		EYE[2] = old_EYE[2] + (EYE[2]-old_EYE[2])/5.;
+		if (ANIMATE) {
+	
+			EYE[0] = old_EYE[0] + (EYE[0]-old_EYE[0])/5.;
+			EYE[1] = old_EYE[1] + (EYE[1]-old_EYE[1])/5.;
+			EYE[2] = old_EYE[2] + (EYE[2]-old_EYE[2])/5.;
+
+		}
 
 
 		gluLookAt(	EYE[0], EYE[1], EYE[2],
