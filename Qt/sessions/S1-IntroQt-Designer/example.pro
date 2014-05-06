@@ -1,0 +1,5 @@
+TEMPLATE = app
+DEPENDPATH+=.
+INCLUDEPATH+=.
+#Input
+SOURCES+=example.cpp
