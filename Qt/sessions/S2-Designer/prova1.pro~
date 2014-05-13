@@ -1,0 +1,4 @@
+TEMPLATE=app
+i
+HEADERS+=myform.h
+SOURCES+=myform.cpp main.cpp
