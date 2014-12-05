@@ -1,0 +1,10 @@
+#include <MyLabel.h>
+
+MyLabel::MyLabel(QString text, QFrame*& f) {
+	
+}
+
+void MyLabel::setUppercaseText(QString s) {
+	s = s.toUpper();
+	setText(s);
+}
